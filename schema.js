@@ -3,7 +3,8 @@ const {
   GraphQLInt,
   GraphQLString,
   GraphQLList,
-  GraphQLSchema
+  GraphQLSchema,
+  GraphQLNonNull
 } = require("graphql");
 const db = require("./db");
 
@@ -87,7 +88,7 @@ const Query = new GraphQLObjectType({
             type: GraphQLString
           }
         },
-        resolve(root, args) {
+        resolve(_, args) {
           return db.models.user.findAll({ where: args });
         }
       },
@@ -101,6 +102,59 @@ const Query = new GraphQLObjectType({
   }
 });
 
+const Mutation = new GraphQLObjectType({
+  name: "Mutation",
+  description: "Functions",
+  fields: () => {
+    return {
+      createUser: {
+        type: UserType,
+        args: {
+          firstName: {
+            type: new GraphQLNonNull(GraphQLString)
+          },
+          lastName: {
+            type: new GraphQLNonNull(GraphQLString)
+          },
+          email: {
+            type: new GraphQLNonNull(GraphQLString)
+          }
+        },
+        resolve(_, args) {
+          // handle authorization here...
+          return db.models.user.create({
+            firstName: args.firstName,
+            lastName: args.lastName,
+            email: args.email.toLowerCase()
+          });
+        }
+      },
+      createTask: {
+        type: TaskType,
+        args: {
+          task: {
+            type: new GraphQLNonNull(GraphQLString)
+          },
+          userId: {
+            type: new GraphQLNonNull(GraphQLInt)
+          }
+        },
+        async resolve(_, args) {
+          try {
+            return await db.models.task.create({
+              name: args.task,
+              userId: args.userId
+            });
+          } catch (e) {
+            console.log(`Error: ${e}`);
+          }
+        }
+      }
+    };
+  }
+});
+
 module.exports = new GraphQLSchema({
-  query: Query
+  query: Query,
+  mutation: Mutation
 });

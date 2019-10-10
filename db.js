@@ -44,7 +44,7 @@ Conn.sync({ force: true }).then(() => {
       email: Faker.internet.email()
     }).then(user => {
       return user.createTask({
-        name: `sample todo by ${user.firstName}`
+        name: `sample task by ${user.firstName}`
       });
     });
   });
