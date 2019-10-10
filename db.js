@@ -2,6 +2,7 @@ const moment = require("moment");
 const _ = require("lodash");
 const Faker = require("faker");
 const Sequelize = require("sequelize");
+const bcrypt = require("bcrypt");
 
 const Conn = new Sequelize("tasker", "postgres", "postgres", {
   host: "localhost",
@@ -34,6 +35,10 @@ const User = Conn.define("user", {
     validate: {
       isEmail: true
     }
+  },
+  password: {
+    type: Sequelize.STRING,
+    allowNull: false
   }
 });
 
@@ -42,11 +47,14 @@ User.hasMany(Task);
 Task.belongsTo(User);
 
 Conn.sync({ force: true }).then(() => {
-  _.times(10, () => {
+  _.times(10, async () => {
+    const hashedPassword = await bcrypt.hash("test", 10);
+
     return User.create({
       firstName: Faker.name.firstName(),
       lastName: Faker.name.lastName(),
-      email: Faker.internet.email()
+      email: Faker.internet.email(),
+      password: hashedPassword
     }).then(user => {
       return user.createTask({
         date: moment().format("MM/DD/YYYY"),
