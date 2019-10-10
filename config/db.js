@@ -47,21 +47,20 @@ User.hasMany(Task);
 Task.belongsTo(User);
 
 Conn.sync({ force: true }).then(() => {
-  _.times(10, async () => {
-    const hashedPassword = await bcrypt.hash("test", 10);
-
-    return User.create({
-      firstName: Faker.name.firstName(),
-      lastName: Faker.name.lastName(),
-      email: Faker.internet.email(),
-      password: hashedPassword
-    }).then(user => {
-      return user.createTask({
-        date: moment().format("MM/DD/YYYY"),
-        note: `sample task by ${user.firstName}`
-      });
-    });
-  });
+  // _.times(10, async () => {
+  //   const hashedPassword = await bcrypt.hash("test", 10);
+  //   return User.create({
+  //     firstName: Faker.name.firstName(),
+  //     lastName: Faker.name.lastName(),
+  //     email: Faker.internet.email(),
+  //     password: hashedPassword
+  //   }).then(user => {
+  //     return user.createTask({
+  //       date: moment().format("MM/DD/YYYY"),
+  //       note: `sample task by ${user.firstName}`
+  //     });
+  //   });
+  // });
 });
 
 module.exports = Conn;

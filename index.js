@@ -1,8 +1,12 @@
 const express = require("express");
 const graphqlHTTP = require("express-graphql");
-const schema = require("./schema");
+
+const schema = require("./graphql");
+const isAuth = require("./middleware/is-auth");
 
 const app = express();
+
+app.use(isAuth);
 
 app.use(
   "/api",
