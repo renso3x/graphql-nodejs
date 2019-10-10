@@ -1,10 +1,12 @@
+const moment = require("moment");
 const {
   GraphQLObjectType,
   GraphQLInt,
   GraphQLString,
   GraphQLList,
   GraphQLSchema,
-  GraphQLNonNull
+  GraphQLNonNull,
+  GraphQLBoolean
 } = require("graphql");
 const db = require("./db");
 
@@ -58,10 +60,16 @@ const TaskType = new GraphQLObjectType({
         return task.id;
       }
     },
-    name: {
+    date: {
       type: GraphQLString,
       resolve(task) {
-        return task.name;
+        return task.date;
+      }
+    },
+    note: {
+      type: GraphQLString,
+      resolve(task) {
+        return task.note;
       }
     },
     user: {
@@ -132,7 +140,10 @@ const Mutation = new GraphQLObjectType({
       createTask: {
         type: TaskType,
         args: {
-          task: {
+          date: {
+            type: new GraphQLNonNull(GraphQLString)
+          },
+          note: {
             type: new GraphQLNonNull(GraphQLString)
           },
           userId: {
@@ -142,11 +153,37 @@ const Mutation = new GraphQLObjectType({
         async resolve(_, args) {
           try {
             return await db.models.task.create({
-              name: args.task,
+              date: args.date,
+              note: args.note,
               userId: args.userId
             });
           } catch (e) {
             console.log(`Error: ${e}`);
+          }
+        }
+      },
+      removeTask: {
+        type: GraphQLBoolean,
+        args: {
+          taskId: {
+            type: new GraphQLNonNull(GraphQLInt)
+          }
+        },
+        async resolve(_, args) {
+          try {
+            const res = await db.models.task.destroy({
+              where: {
+                id: args.taskId
+              }
+            });
+
+            if (res === 0) {
+              throw new Error("Sorry, unable to find task.");
+            }
+
+            return true;
+          } catch (e) {
+            return e;
           }
         }
       }

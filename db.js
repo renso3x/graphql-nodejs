@@ -1,3 +1,4 @@
+const moment = require("moment");
 const _ = require("lodash");
 const Faker = require("faker");
 const Sequelize = require("sequelize");
@@ -8,7 +9,11 @@ const Conn = new Sequelize("tasker", "postgres", "postgres", {
 });
 
 const Task = Conn.define("task", {
-  name: {
+  date: {
+    type: Sequelize.STRING,
+    allowNull: false
+  },
+  note: {
     type: Sequelize.STRING,
     allowNull: false
   }
@@ -44,7 +49,8 @@ Conn.sync({ force: true }).then(() => {
       email: Faker.internet.email()
     }).then(user => {
       return user.createTask({
-        name: `sample task by ${user.firstName}`
+        date: moment().format("MM/DD/YYYY"),
+        note: `sample task by ${user.firstName}`
       });
     });
   });
