@@ -1,28 +1,19 @@
-const jwt = require("jsonwebtoken");
-const {
-  GraphQLObjectType,
-  GraphQLInt,
-  GraphQLString,
-  GraphQLList,
-  GraphQLNonNull
-} = require("graphql");
-const bcrypt = require("bcrypt");
+const { GraphQLObjectType, GraphQLList } = require('graphql');
 
-const db = require("../config/db");
-const User = require("./schemas/user");
-const Task = require("./schemas/task");
-const Auth = require("./schemas/auth");
+const db = require('../config/db');
+const User = require('./schemas/user');
+const Task = require('./schemas/task');
 
 const RootQuery = new GraphQLObjectType({
-  name: "Query",
-  description: " This is a root query",
+  name: 'Query',
+  description: ' This is a root query',
   fields: () => {
     return {
       users: {
         type: GraphQLList(User),
         async resolve(_, args, ctx) {
           if (!ctx.isAuth) {
-            throw new Error("UnAuthorized");
+            throw new Error('UnAuthorized');
           }
           try {
             const res = await db.models.user.findAll({
@@ -38,52 +29,18 @@ const RootQuery = new GraphQLObjectType({
       },
       tasks: {
         type: GraphQLList(Task),
-        resolve(_, args) {
-          return db.models.task.findAll({ where: args });
-        }
-      },
-      login: {
-        type: Auth,
-        args: {
-          email: {
-            type: new GraphQLNonNull(GraphQLString)
-          },
-          password: {
-            type: new GraphQLNonNull(GraphQLString)
+        async resolve(_, args, ctx) {
+          if (!ctx.isAuth) {
+            throw new Error('UnAuthorized');
           }
-        },
-        async resolve(_, args) {
+
           try {
-            const user = await db.models.user.findOne({
+            const res = await db.models.task.findAll({
               where: {
-                email: args.email
+                userId: ctx.userId
               }
             });
-
-            if (!user) {
-              throw new Error("User doesn't exist");
-            }
-
-            const isEqual = await bcrypt.compare(args.password, user.password);
-
-            if (!isEqual) {
-              throw new Error("Email and  password is incorrect");
-            }
-
-            const token = jwt.sign(
-              {
-                userId: user.id,
-                email: user.email
-              },
-              "thisismysuperlongsscret",
-              { expiresIn: 60 * 60 }
-            );
-
-            return {
-              userId: user.id,
-              token,
-              tokenExpiration: 60 * 60
-            };
+            return res;
           } catch (e) {
             throw e;
           }

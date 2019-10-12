@@ -1,15 +1,16 @@
-const express = require("express");
-const graphqlHTTP = require("express-graphql");
+const express = require('express');
+const graphqlHTTP = require('express-graphql');
+const cors = require('cors');
 
-const schema = require("./graphql");
-const isAuth = require("./middleware/is-auth");
+const schema = require('./graphql');
+const isAuth = require('./middleware/is-auth');
 
 const app = express();
 
+app.use(cors());
 app.use(isAuth);
-
 app.use(
-  "/api",
+  '/api',
   graphqlHTTP({
     schema: schema,
     graphiql: true
